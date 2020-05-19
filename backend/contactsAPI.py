@@ -20,7 +20,7 @@ def get_contacts():
 
 
     if request.method == 'GET':
-        return jsonify(user.fetch_contacts())
+        return jsonify({'contacts': user.fetch_contacts()})
 
 
     if request.method == 'POST':
@@ -35,7 +35,7 @@ def get_contacts():
         user['contact_list'] = list(filter(user['contact_list'], lambda u: u.uid == uid))
         contact.remove()
         user.save()
-        return Response(status=200)
+        return Response(status=204)
 
 @app.route('/login', methods=['POST'])
 def login():
