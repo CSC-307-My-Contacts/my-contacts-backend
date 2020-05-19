@@ -1,9 +1,5 @@
-from flask import Flask, Response
-from flask import request
-from flask import jsonify
+from flask import Flask, Response, request, jsonify
 from flask_cors import CORS
-import random
-import string
 from database import User, Contacts
 
 app = Flask(__name__)
@@ -24,6 +20,7 @@ def get_contacts():
 
 
     if request.method == 'POST':
+        # Create contact
         contact = Contacts(request.get_json()['contact'])
         user['contact_list'].append(contact['uid'])
         contact.save()
@@ -32,7 +29,9 @@ def get_contacts():
 
     if request.method == 'DELETE':
         uid = request.get_json()['uid']
+        # Remove contact from users list
         user['contact_list'] = list(filter(user['contact_list'], lambda u: u.uid == uid))
+        # Delete contact from database. TODO test
         contact.remove()
         user.save()
         return Response(status=204)
@@ -45,11 +44,12 @@ def login():
         user = User().find_by_username(requested_user['username'])
 
         if not user:
+            # Username not found
            return Response(status=403)
 
         if requested_user['password'] == user['password']:
             return jsonify({'token':user['token']})
-        #resp.headers['WWW-Authenticate'] = 'Basic realm=Access to contacts'
+        # Invalid password
         return Response(status=403)
 
 
@@ -57,9 +57,11 @@ def login():
 @app.route('/create', methods=['POST'])
 def create_user():
     if request.method == 'POST':
+        # Create user object
         user = User(request.get_json())
 
         possible_users = user.find_by_username(user['username'])
+        # Check if a user already exists with this username
         if possible_users:
             return Response(status=403)
 
