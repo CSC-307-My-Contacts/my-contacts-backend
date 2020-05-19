@@ -48,7 +48,7 @@ def login():
            return Response(status=403)
 
         if requested_user['password'] == user['password']:
-            return jsonify(user['token'])
+            return jsonify({'token':user['token']})
         #resp.headers['WWW-Authenticate'] = 'Basic realm=Access to contacts'
         return Response(status=403)
 
