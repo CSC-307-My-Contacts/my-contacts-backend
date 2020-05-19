@@ -42,11 +42,15 @@ def login():
     if request.method == 'POST':
         requested_user = request.get_json()
 
-        user = User().find_by_username(user['username'])
+        user = User().find_by_username(requested_user['username'])
+
+        if not user:
+           return Response(status=403)
+
         if requested_user['password'] == user['password']:
             return jsonify(user['token'])
         #resp.headers['WWW-Authenticate'] = 'Basic realm=Access to contacts'
-        return Response(403)
+        return Response(status=403)
 
 
 
@@ -56,7 +60,7 @@ def create_user():
         user = User(request.get_json())
 
         possible_users = user.find_by_username(user['username'])
-        if possible_users != []:
+        if possible_users:
             return Response(status=403)
 
         user['token'] = hash(user['password'])

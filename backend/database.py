@@ -41,7 +41,10 @@ class User(Model):
     collection = db_client["MyContactsApp"]["users_list"]
 
     def find_by_username(self, username):
-        return User(self.collection.find_one({"username": username}))
+        u = self.collection.find_one({"username": username})
+        if u:
+            return User(u)
+        return None
 
     def find_by_token(self, token):
         return User(self.collection.find_one({"token": token}))
