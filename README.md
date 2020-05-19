@@ -5,7 +5,7 @@ Frontend avaible [here](https://github.com/CSC-307-My-Contacts/my-contacts)
 
 ## Install
 ```bash
-pip3 install --user pymongo flask
+pipenv install
 ```
 
 ## Run
