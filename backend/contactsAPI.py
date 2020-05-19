@@ -22,16 +22,17 @@ def get_contacts():
     if request.method == 'GET':
         return jsonify(user.fetch_contacts())
 
-    contact = Contacts(request.get_json()['contact'])
 
     if request.method == 'POST':
+        contact = Contacts(request.get_json()['contact'])
         user['contact_list'].append(contact['uid'])
         contact.save()
         user.save()
         return jsonify(contact)
 
     if request.method == 'DELETE':
-        user['contact_list'] = list(filter(user['contact_list'], lambda u: u.uid == contact['uid']))
+        uid = request.get_json()['uid']
+        user['contact_list'] = list(filter(user['contact_list'], lambda u: u.uid == uid))
         contact.remove()
         user.save()
         return Response(status=200)
