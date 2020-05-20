@@ -27,7 +27,7 @@ def get_contacts():
         del contact['_id']
         user['contact_list'].append(contact['uid'])
         user.save()
-        return jsonify(contact)
+        return jsonify({'contact':contact})
 
     if request.method == 'DELETE':
         uid = request.get_json()['uid']
