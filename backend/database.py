@@ -74,7 +74,7 @@ class Contacts(Model):
     def find_by_ids(self, ids):
         contacts = []
         for id in ids:
-            c = self.collection.find({'uid': id})
+            c = self.collection.find_one({'uid': id})
             del c['_id']
             contacts.append(c)
         return contacts
