@@ -47,6 +47,7 @@ class User(Model):
         return None
 
     def find_by_token(self, token):
+        print(token)
         return User(self.collection.find_one({"token": token}))
 
     def fetch_contacts(self):
@@ -66,6 +67,8 @@ class Contacts(Model):
     def find_by_ids(self, ids):
         contacts = []
         for id in ids:
-            contacts = contacts + list(self.collection.find({'uid' : id}))
+            c = self.collection.find({'uid': id})
+            del c['_id']
+            contacts.append(c)
         return contacts
 

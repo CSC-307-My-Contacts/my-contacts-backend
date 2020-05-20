@@ -22,8 +22,10 @@ def get_contacts():
     if request.method == 'POST':
         # Create contact
         contact = Contacts(request.get_json()['contact'])
-        user['contact_list'].append(contact['uid'])
         contact.save()
+        # Hack
+        del contact['_id']
+        user['contact_list'].append(contact['uid'])
         user.save()
         return jsonify(contact)
 
@@ -65,7 +67,7 @@ def create_user():
         if possible_users:
             return Response(status=403)
 
-        user['token'] = hash(user['password'])
+        user['token'] = str(hash(user['password']))
         user['contact_list'] = []
         user.save()
 
