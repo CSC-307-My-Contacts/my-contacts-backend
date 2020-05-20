@@ -71,7 +71,7 @@ def create_user():
         user['contact_list'] = []
         user.save()
 
-        return jsonify(user['token'])
+        return jsonify({'token' : user['token']})
 
 if __name__ == "__main__":
     app.run()
