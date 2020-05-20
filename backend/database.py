@@ -14,12 +14,13 @@ class Model(dict):
         if not self._id:
             self.collection.insert(self)
             self.uid = str(self._id)
+            del self['_id']
         else:
             del self['_id']
             self.collection.update(
                     {"uid": self.uid}, self)
             self.uid = str(self._id)
-        self.reload()
+
 
     def reload(self):
         if self.uid:
@@ -32,7 +33,7 @@ class Model(dict):
 
     def remove(self):
         if self.uid:
-            resp = self.collection.remove({"uid": ObjectId(self.uid)})
+            resp = self.collection.remove({"uid": self['uid']})
             self.clear()
             return resp
 
@@ -44,12 +45,16 @@ class User(Model):
     def find_by_username(self, username):
         u = self.collection.find_one({"username": username})
         if u:
+            del u['_id']
             return User(u)
         return None
 
     def find_by_token(self, token):
-        print(token)
-        return User(self.collection.find_one({"token": token}))
+        u = User(self.collection.find_one({"token": token}))
+        if u:
+            del u['_id']
+            return u
+        return None
 
     def fetch_contacts(self):
         return Contacts().find_by_ids(self['contact_list'])
@@ -63,6 +68,7 @@ class Contacts(Model):
 
     def find_by_id(self, id):
         contact = self.collection.find_one({"uid": id})
+        del contact['_id']
         return Contacts(contact)
 
     def find_by_ids(self, ids):

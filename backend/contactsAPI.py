@@ -24,7 +24,6 @@ def get_contacts():
         contact = Contacts(request.get_json()['contact'])
         contact.save()
         # Hack
-        del contact['_id']
         user['contact_list'].append(contact['uid'])
         user.save()
         return jsonify({'contact':contact})
