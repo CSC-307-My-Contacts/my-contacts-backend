@@ -15,6 +15,7 @@ class Model(dict):
             self.collection.insert(self)
             self.uid = str(self._id)
         else:
+            del self['_id']
             self.collection.update(
                     {"uid": self.uid}, self)
             self.uid = str(self._id)
