@@ -18,10 +18,8 @@ def get_contacts():
 
     user = User().find_by_token(token)
 
-
     if request.method == 'GET':
         return jsonify({'contacts': user.fetch_contacts()})
-
 
     if request.method == 'POST':
         contact = Contacts(request.get_json()['contact'])
@@ -37,6 +35,7 @@ def get_contacts():
         user.save()
         return Response(status=204)
 
+
 @app.route('/login', methods=['POST'])
 def login():
     if request.method == 'POST':
@@ -45,13 +44,12 @@ def login():
         user = User().find_by_username(requested_user['username'])
 
         if not user:
-           return Response(status=403)
+            return Response(status=403)
 
         if requested_user['password'] == user['password']:
             return jsonify(user['token'])
-        #resp.headers['WWW-Authenticate'] = 'Basic realm=Access to contacts'
+        # resp.headers['WWW-Authenticate'] = 'Basic realm=Access to contacts'
         return Response(status=403)
-
 
 
 @app.route('/create', methods=['POST'])
@@ -68,6 +66,7 @@ def create_user():
         user.save()
 
         return jsonify(user['token'])
+
 
 if __name__ == "__main__":
     app.run()
