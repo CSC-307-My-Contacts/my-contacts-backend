@@ -13,29 +13,26 @@ class Model(dict):
     def save(self):
         if not self._id:
             self.collection.insert(self)
-            self.uid = str(self._id)
-            del self['_id']
         else:
-            del self['_id']
             self.collection.update(
-                    {"uid": self.uid}, self)
-            self.uid = str(self._id)
-
+                { "_id": ObjectId(self._id) }, self)
+        self._id = str(self._id)
 
     def reload(self):
-        if self.uid:
-            result = self.collection.find_one({"uid": self.uid})
+        if self._id:
+            result = self.collection.find_one({"_id": ObjectId(self._id)})
             if result :
-                #self.update(result)
-                self.uid = str(self.uid)
+                self.update(result)
+                self._id = str(self._id)
                 return True
         return False
 
     def remove(self):
-        if self.uid:
-            resp = self.collection.remove({"uid": self['uid']})
+        if self._id:
+            resp = self.collection.remove({"_id": ObjectId(self._id)})
             self.clear()
             return resp
+
 
 
 class User(Model):
@@ -45,14 +42,12 @@ class User(Model):
     def find_by_username(self, username):
         u = self.collection.find_one({"username": username})
         if u:
-            del u['_id']
             return User(u)
         return None
 
     def find_by_token(self, token):
         u = User(self.collection.find_one({"token": token}))
         if u:
-            del u['_id']
             return u
         return None
 
@@ -67,15 +62,15 @@ class Contacts(Model):
     collection = db_client["MyContactsApp"]["contacts_list"]
 
     def find_by_id(self, id):
-        contact = self.collection.find_one({"uid": id})
-        del contact['_id']
+        contact = self.collection.find_one({"_id": id})
         return Contacts(contact)
 
     def find_by_ids(self, ids):
         contacts = []
         for id in ids:
-            c = self.collection.find_one({'uid': id})
-            del c['_id']
-            contacts.append(c)
+            c = self.collection.find_one({'_id': ObjectId(id)})
+            if c:
+                c['_id'] = str(c['_id'])
+                contacts.append(c)
         return contacts
 

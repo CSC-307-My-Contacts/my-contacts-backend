@@ -24,14 +24,14 @@ def get_contacts():
         contact = Contacts(request.get_json()['contact'])
         contact.save()
         # Hack
-        user['contact_list'].append(contact['uid'])
+        user['contact_list'].append(contact['_id'])
         user.save()
         return jsonify({'contact':contact})
 
     if request.method == 'DELETE':
-        uid = request.get_json()['uid']
+        _id = request.get_json()['uid']
         # Remove contact from users list
-        user['contact_list'] = list(filter(user['contact_list'], lambda u: u.uid == uid))
+        user['contact_list'] = list(filter(user['contact_list'], lambda u: str(u._id) == _id))
         # Delete contact from database. TODO test
         contact.remove()
         user.save()
