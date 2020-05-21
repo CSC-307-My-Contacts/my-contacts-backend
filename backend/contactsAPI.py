@@ -14,10 +14,8 @@ def get_contacts():
 
     user = User().find_by_token(token)
 
-
     if request.method == 'GET':
         return jsonify({'contacts': user.fetch_contacts()})
-
 
     if request.method == 'POST':
         # Create contact
@@ -37,6 +35,7 @@ def get_contacts():
         user.save()
         return Response(status=204)
 
+
 @app.route('/login', methods=['POST'])
 def login():
     if request.method == 'POST':
@@ -52,7 +51,6 @@ def login():
             return jsonify({'token':user['token']})
         # Invalid password
         return Response(status=403)
-
 
 
 @app.route('/create', methods=['POST'])
@@ -71,6 +69,7 @@ def create_user():
         user.save()
 
         return jsonify({'token' : user['token']})
+
 
 if __name__ == "__main__":
     app.run()
