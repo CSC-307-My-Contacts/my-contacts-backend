@@ -15,4 +15,4 @@ python3 contactsAPI.py
 
 ## Style Guide
 
-* Prettier
+* [pycodestyle 2.6.0](https://pypi.org/project/pycodestyle/)
