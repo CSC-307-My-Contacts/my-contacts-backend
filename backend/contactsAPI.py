@@ -15,7 +15,7 @@ def get_contacts():
     user = User().find_by_token(token)
 
     if request.method == 'GET':
-        return jsonify({'contacts': user.fetch_contacts()})
+        return jsonify({'contacts': sorted(user.fetch_contacts(), key=lambda c: c['name'])})
 
     if request.method == 'POST':
         # Create contact
@@ -28,9 +28,10 @@ def get_contacts():
         return jsonify({'contact':contact})
 
     if request.method == 'DELETE':
-        _id = request.get_json()['uid']
+        _id = request.get_json()['_id']
         # Remove contact from users list
-        user['contact_list'] = list(filter(user['contact_list'], lambda u: str(u._id) == _id))
+        contact = Contacts().find_by_id(_id)
+        user['contact_list'] = list(filter(lambda id: id != _id, user['contact_list']))
         # Delete contact from database. TODO test
         contact.remove()
         user.save()

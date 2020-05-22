@@ -63,8 +63,10 @@ class Contacts(Model):
     collection = db_client["MyContactsApp"]["contacts_list"]
 
     def find_by_id(self, id):
-        contact = self.collection.find_one({"_id": id})
-        return Contacts(contact)
+        c = self.collection.find_one({"_id": ObjectId(id)})
+        if c:
+            c['_id'] = str(c['_id'])
+            return Contacts(c)
 
     def find_by_ids(self, ids):
         contacts = []
