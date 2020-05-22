@@ -14,6 +14,7 @@ class Model(dict):
         if not self._id:
             self.collection.insert(self)
         else:
+            self._id = ObjectId(self._id)
             self.collection.update(
                 { "_id": ObjectId(self._id) }, self)
         self._id = str(self._id)
