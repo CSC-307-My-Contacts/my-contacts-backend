@@ -21,7 +21,7 @@ def get_contacts():
         # Create contact
         contact = Contacts(request.get_json()['contact'])
         contact.save()
-        # Hack
+
         if contact['_id'] not in user['contact_list']:
             user['contact_list'].append(contact['_id'])
         user.save()

@@ -2,7 +2,7 @@ import pytest
 import contactsAPI
 
 
-def emptyTest():
+def test_answer():
     booleanOne = True
     booleanTwo = True
     assert (booleanOne == booleanTwo)
