@@ -5,7 +5,7 @@ __CSC 307 Project:__ Alex, Bailey, Ryan, Yogi
 
 ## Install
 ```bash
-pipenv install
+pip3 install -r requirements.txt
 ```
 
 ## Run
