@@ -1,5 +1,6 @@
 from flask import Flask, Response, request, jsonify
 from flask_cors import CORS
+
 from database import User, Contacts
 
 app = Flask(__name__)
@@ -25,7 +26,7 @@ def get_contacts():
         if contact['_id'] not in user['contact_list']:
             user['contact_list'].append(contact['_id'])
         user.save()
-        return jsonify({'contact':contact})
+        return jsonify({'contact': contact})
 
     if request.method == 'DELETE':
         _id = request.get_json()['_id']
@@ -47,10 +48,10 @@ def login():
 
         if not user:
             # Username not found
-           return Response(status=403)
+            return Response(status=403)
 
         if requested_user['password'] == user['password']:
-            return jsonify({'token':user['token']})
+            return jsonify({'token': user['token']})
         # Invalid password
         return Response(status=403)
 
@@ -70,7 +71,16 @@ def create_user():
         user['contact_list'] = []
         user.save()
 
-        return jsonify({'token' : user['token']})
+        return jsonify({'token': user['token']})
+
+
+@app.route('/csv', methods=['POST'])
+def upload_csv():
+    file = request.files['file']
+    lines = file.readlines()
+    for line in lines:
+        print(line)
+    return Response(status=200)
 
 
 if __name__ == "__main__":
