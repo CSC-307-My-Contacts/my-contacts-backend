@@ -12,7 +12,7 @@ class Model(dict):
 
     def save(self):
         if not self._id:
-            self.collection.insert(self)
+            self.collection.insert_one(self)
         else:
             self._id = ObjectId(self._id)
             self.collection.update(
