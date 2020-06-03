@@ -1,5 +1,7 @@
 from flask import Flask, Response, request, jsonify
 from flask_cors import CORS
+from csv import reader
+import io
 
 from database import User, Contacts
 
@@ -75,14 +77,130 @@ def create_user():
 
         return jsonify({'token': user['token']})
 
+def parse_google_csv(fields, contacts):
+    new_db_contacts = []
+    for contact in contacts: 
+        new_db_contact = Contacts({"name": "", 
+                                  "emails": [],
+                                  "phones": [],
+                                  "labels": [],
+                                  "image": {"type": "none", "url": ""}})
+        for i, field in enumerate(fields):
+            if i == len(contact):
+                break
+            if field == "Name" and contact[i]:
+                new_db_contact["name"] = contact[i]
+
+            elif "E-mail" in field and "Type" in field and contact[i]:
+                email_type = contact[i].strip("* ")
+                data = contact[i + 1]
+
+                # this code exists in case google ever makes there csv format consistent
+                if " ::: " in data:
+                    emails = data.split(" ::: ")
+                    for email in emails:
+                        new_db_contact["emails"].append({"address": email,
+                                                         "type": email_type})
+                else:
+                    new_db_contact["emails"].append({"address": data,
+                                                     "type": email_type})
+
+            elif "Phone" in field and "Type" in field and contact[i]:
+                phone_type = contact[i].strip("* ")
+                data = contact[i + 1]
+                if " ::: " in data:
+                    numbers = data.split(" ::: ")
+                    for number in numbers:
+                        new_db_contact["phones"].append({"number": number,
+                                                         "type": phone_type})
+
+                else: 
+                    new_db_contact["phones"].append({"number": data,
+                                                     "type": phone_type})
+
+            elif "Group Membership" in field and contact[i]:
+                new_db_contact["labels"] = contact[i].split(" ::: ")
+                new_db_contact["labels"] = [label.strip("* ") for label in new_db_contact["labels"]]
+
+            elif "Photo" in field and contact[i]:
+                new_db_contact["image"] = {"type": "external", "url" : contact[i]}
+
+
+        new_db_contacts.append(new_db_contact)
+
+    return new_db_contacts
+
+def parse_outlook_csv(fields, contacts):
+    new_db_contacts = []
+    for contact in contacts: 
+        new_db_contact = Contacts({"name": "", 
+                                  "emails": [],
+                                  "phones": [],
+                                  "labels": [],
+                                  "image": {"type":"none", "url": ""}})
+        for i, field in enumerate(fields):
+            if i == len(contact):
+                break
+            if "Name" in field and contact[i]:
+                new_db_contact["name"] += contact[i]
+
+            elif "E-mail" in field and contact[i]:
+                new_db_contact["emails"].append({"address": contact[i],
+                                                 "type": str(len(new_db_contact["emails"]) + 1)})
+            elif "Phone" in field and contact[i]:
+                new_db_contact["phones"].append({"number": contact[i],
+                                                 "type": field.replace(" Phone", "")})
+
+            elif "Categories" in field and contact[i]:
+                while i < len(contact) and contact[i]:
+                    new_db_contact["labels"].append(contact[i])
+                    i += 1
+
+            #outlook csv's don't have any kind of photo field
+
+        new_db_contacts.append(new_db_contact)
+    
+    return new_db_contacts
+
+def parse_upload_csv(token, fields, contacts):
+    user = User().find_by_token(token)
+    if fields[0] == "Name":
+        new_db_contacts = parse_google_csv(fields, contacts)
+    elif fields[0] == "First Name":
+        new_db_contacts = parse_outlook_csv(fields, contacts)
+    else:
+        return []
+
+    for new_db_contact in new_db_contacts:
+        new_db_contact.save()
+        
+        #add contact to user who is importing it
+        try:
+            user['contact_list'].append(new_db_contact['_id'])
+        except KeyError:
+            user['contact_list'] = [new_db_contact['_id']]
+
+    user.save()
+
+    return new_db_contacts
 
 @app.route('/csv', methods=['POST'])
 def upload_csv():
     file = request.files['file']
-    lines = file.readlines()
-    for line in lines:
-        print(line)
-    return Response(status=200)
+    token = request.headers.get('token')
+    stream = io.StringIO(file.stream.read().decode(), newline=None)
+    csv = reader(stream)
+    lines = []
+    for row in csv:
+        lines.append(row)
+    
+    fields = lines[0]
+    contacts = parse_upload_csv(token, fields, lines[1:])
+
+    if not contacts:
+        return 422 #unprocessable entity if not in google or outlook contact form
+
+    return jsonify(contacts), 200
 
 
 if __name__ == "__main__":
