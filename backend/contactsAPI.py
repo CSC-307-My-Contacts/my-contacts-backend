@@ -61,6 +61,8 @@ def create_user():
     if request.method == 'POST':
         # Create user object
         user = User(request.get_json())
+        if user['username'] == '' or user['password'] == '':
+            return Response(status=403)
 
         possible_users = user.find_by_username(user['username'])
         # Check if a user already exists with this username
