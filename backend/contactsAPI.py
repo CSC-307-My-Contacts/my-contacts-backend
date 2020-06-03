@@ -69,7 +69,7 @@ def create_user():
         if possible_users:
             return Response(status=403)
 
-        user['token'] = str(hash(user['password']))
+        user['token'] = str(hash(user['username'] + user['password']))
         user['contact_list'] = []
         user.save()
 
