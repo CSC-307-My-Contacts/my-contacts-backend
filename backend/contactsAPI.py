@@ -1,10 +1,12 @@
+import io
+import os
+
+
 from flask import Flask, Response, request, jsonify, send_from_directory
 from flask_cors import CORS
 from csv import reader
-import io
 
 from database import User, Contacts
-import os
 from datetime import datetime
 
 UPLOAD_FOLDER = 'uploads'
@@ -52,8 +54,10 @@ def image():
         _id = request.form.get('_id')
         user = User().find_by_token(token)
         contact = Contacts().find_by_id(_id)
-        if contact['_id'] not in user['contact_list']:
-            return Response(status=403)
+       
+        # Should never occur
+        #if contact['_id'] not in user['contact_list']:
+        #    return Response(status=403)
 
         image_file = request.files['file']
         image_type = os.path.basename(image_file.filename).split(".")[-1]
@@ -117,8 +121,9 @@ def parse_google_csv(fields, contacts):
                                    "labels": [],
                                    "image": {"type": "none", "url": ""}})
         for i, field in enumerate(fields):
-            if i == len(contact):
-                break
+            # Lol
+            #if i == len(contact):
+            #    break
             if field == "Name" and contact[i]:
                 new_db_contact["name"] = contact[i]
 
@@ -165,13 +170,14 @@ def parse_outlook_csv(fields, contacts):
     new_db_contacts = []
     for contact in contacts:
         new_db_contact = Contacts({"name": "",
+
                                    "emails": [],
                                    "phones": [],
                                    "labels": [],
                                    "image": {"type": "none", "url": ""}})
         for i, field in enumerate(fields):
-            if i == len(contact):
-                break
+            #if i == len(contact):
+            #    break
             if "Name" in field and contact[i]:
                 new_db_contact["name"] += contact[i]
 
@@ -207,10 +213,8 @@ def parse_upload_csv(token, fields, contacts):
         new_db_contact.save()
 
         # add contact to user who is importing it
-        try:
-            user['contact_list'].append(new_db_contact['_id'])
-        except KeyError:
-            user['contact_list'] = [new_db_contact['_id']]
+        user['contact_list'].append(new_db_contact['_id'])
+
 
     user.save()
 
@@ -230,11 +234,12 @@ def upload_csv():
     fields = lines[0]
     contacts = parse_upload_csv(token, fields, lines[1:])
 
-    if not contacts:
-        return 422  # unprocessable entity if not in google or outlook contact form
+    if contacts == []:
+        print('returning 422')
+        return Response(status=422)
+
 
     return jsonify({'contacts': contacts}), 200
-
 
 if __name__ == "__main__":
     app.run()

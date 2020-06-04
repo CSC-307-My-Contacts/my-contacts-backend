@@ -19,15 +19,6 @@ class Model(dict):
                 { "_id": ObjectId(self._id) }, self)
         self._id = str(self._id)
 
-    def reload(self):
-        if self._id:
-            result = self.collection.find_one({"_id": ObjectId(self._id)})
-            if result :
-                self.update(result)
-                self._id = str(self._id)
-                return True
-        return False
-
     def remove(self):
         if self._id:
             resp = self.collection.remove({"_id": ObjectId(self._id)})
@@ -44,13 +35,11 @@ class User(Model):
         u = self.collection.find_one({"username": username})
         if u:
             return User(u)
-        return None
 
     def find_by_token(self, token):
-        u = User(self.collection.find_one({"token": token}))
+        u = self.collection.find_one({"token": token})
         if u:
-            return u
-        return None
+            return User(u)
 
     def fetch_contacts(self):
         return Contacts().find_by_ids(self['contact_list'])

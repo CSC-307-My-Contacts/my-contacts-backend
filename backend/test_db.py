@@ -4,6 +4,10 @@ from database import User, Contacts
 from bson import ObjectId
 
 
+def test_no_user():
+    u = User()
+    assert not u.find_by_token('aaa')
+
 def test_create_user():
     uname = hash(str(datetime.datetime.now()))
     u = {
