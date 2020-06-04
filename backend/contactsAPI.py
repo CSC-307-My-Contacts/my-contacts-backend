@@ -14,7 +14,8 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # CORS stands for Cross Origin Requests.
-CORS(app)  # Here we'll allow requests coming from any domain. Not recommended for production environment.
+# Here we'll allow requests coming from any domain. Not recommended for production environment.
+CORS(app)
 
 
 @app.route('/', methods=['GET', 'POST', 'DELETE'])
@@ -40,7 +41,8 @@ def get_contacts():
         _id = request.get_json()['_id']
         # Remove contact from users list
         contact = Contacts().find_by_id(_id)
-        user['contact_list'] = list(filter(lambda id: id != _id, user['contact_list']))
+        user['contact_list'] = list(
+            filter(lambda id: id != _id, user['contact_list']))
         # Delete contact from database. TODO test
         contact.remove()
         user.save()
@@ -54,15 +56,16 @@ def image():
         _id = request.form.get('_id')
         user = User().find_by_token(token)
         contact = Contacts().find_by_id(_id)
-       
+
         # Should never occur
-        #if contact['_id'] not in user['contact_list']:
+        # if contact['_id'] not in user['contact_list']:
         #    return Response(status=403)
 
         image_file = request.files['file']
         image_type = os.path.basename(image_file.filename).split(".")[-1]
         hashed_name = f"{hash(_id)!s}{hash(datetime.now().strftime('%d'))!s}.{image_type}"
-        image_file.save(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], hashed_name))
+        image_file.save(os.path.join(
+            os.getcwd(), app.config['UPLOAD_FOLDER'], hashed_name))
         contact['image'] = {'type': 'hosted', 'url': f"img/{hashed_name}"}
         contact.save()
         return jsonify({'contact': contact}), 200
@@ -122,7 +125,7 @@ def parse_google_csv(fields, contacts):
                                    "image": {"type": "none", "url": ""}})
         for i, field in enumerate(fields):
             # Lol
-            #if i == len(contact):
+            # if i == len(contact):
             #    break
             if field == "Name" and contact[i]:
                 new_db_contact["name"] = contact[i]
@@ -156,10 +159,12 @@ def parse_google_csv(fields, contacts):
 
             elif "Group Membership" in field and contact[i]:
                 new_db_contact["labels"] = contact[i].split(" ::: ")
-                new_db_contact["labels"] = [label.strip("* ") for label in new_db_contact["labels"]]
+                new_db_contact["labels"] = [label.strip(
+                    "* ") for label in new_db_contact["labels"]]
 
             elif "Photo" in field and contact[i]:
-                new_db_contact["image"] = {"type": "external", "url": contact[i]}
+                new_db_contact["image"] = {
+                    "type": "external", "url": contact[i]}
 
         new_db_contacts.append(new_db_contact)
 
@@ -176,7 +181,7 @@ def parse_outlook_csv(fields, contacts):
                                    "labels": [],
                                    "image": {"type": "none", "url": ""}})
         for i, field in enumerate(fields):
-            #if i == len(contact):
+            # if i == len(contact):
             #    break
             if "Name" in field and contact[i]:
                 new_db_contact["name"] += contact[i]
@@ -215,7 +220,6 @@ def parse_upload_csv(token, fields, contacts):
         # add contact to user who is importing it
         user['contact_list'].append(new_db_contact['_id'])
 
-
     user.save()
 
     return new_db_contacts
@@ -238,8 +242,8 @@ def upload_csv():
         print('returning 422')
         return Response(status=422)
 
-
     return jsonify({'contacts': contacts}), 200
+
 
 if __name__ == "__main__":
     app.run()

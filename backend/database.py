@@ -16,7 +16,7 @@ class Model(dict):
         else:
             self._id = ObjectId(self._id)
             self.collection.update(
-                { "_id": ObjectId(self._id) }, self)
+                {"_id": ObjectId(self._id)}, self)
         self._id = str(self._id)
 
     def remove(self):
@@ -24,7 +24,6 @@ class Model(dict):
             resp = self.collection.remove({"_id": ObjectId(self._id)})
             self.clear()
             return resp
-
 
 
 class User(Model):
@@ -45,8 +44,6 @@ class User(Model):
         return Contacts().find_by_ids(self['contact_list'])
 
 
-
-
 class Contacts(Model):
     db_client = pymongo.MongoClient('localhost', 27017)
     collection = db_client["MyContactsApp"]["contacts_list"]
@@ -65,4 +62,3 @@ class Contacts(Model):
                 c['_id'] = str(c['_id'])
                 contacts.append(c)
         return contacts
-
