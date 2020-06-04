@@ -47,6 +47,12 @@ def test_create_account(client):
     assert rv.status_code == 200
     assert rv.get_json()['token']
 
+def test_user_no_pw(client):
+    rv = client.post('/create', json={
+        'username': '',
+        'password': ''})
+    assert rv.status_code == 403
+
 
 def test_dup_account(client):
     rv = client.post('/create', json={
