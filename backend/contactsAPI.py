@@ -65,7 +65,7 @@ def image():
 
 
 @app.route('/img/<filename>', methods=['GET'])
-def getImage(filename):
+def get_image(filename):
     if request.method == 'GET':
         return send_from_directory(app.config['UPLOAD_FOLDER'],
                                    filename=filename)
@@ -233,7 +233,7 @@ def upload_csv():
     if not contacts:
         return 422  # unprocessable entity if not in google or outlook contact form
 
-    return jsonify(contacts), 200
+    return jsonify({'contacts': contacts}), 200
 
 
 if __name__ == "__main__":
