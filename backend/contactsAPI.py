@@ -2,6 +2,7 @@ from flask import Flask, Response, request, jsonify, send_from_directory
 from flask_cors import CORS
 from csv import reader
 import io
+import vobject
 
 from database import User, Contacts
 import os
@@ -216,22 +217,75 @@ def parse_upload_csv(token, fields, contacts):
 
     return new_db_contacts
 
+def parse_upload_vcard(token, file):
+    stream = io.StringIO(file.stream.read().decode(), newline=None)
+    user = User().find_by_token(token)
+    new_db_contacts = []
+    for vcard in vobject.readComponents(stream):
+        new_db_contact = Contacts({"name": "",
+                                   "emails": [],
+                                   "phones": [],
+                                   "labels": [],
+                                   "image": {"type": "none", "url": ""}})
+
+        for child in vcard.getChildren():
+            field_name = child.name.lower()
+
+            if field_name == 'email':
+                email_type = ""
+                email_types = child.params.get("TYPE", [])
+
+                if len(email_types) > 1:
+                    email_type = email_types[1]
+
+                new_db_contact['emails'].append({'address': child.value,
+                                                 'type': email_type})
+
+            if field_name == 'tel':
+                tel_type = ""
+                tel_types = child.params.get("TYPE", [])
+
+                if tel_types:
+                    tel_type = tel_types[0]
+
+                new_db_contact['phones'].append({'number': child.value,
+                                                 'type': tel_type})
+
+            if field_name == 'categories': 
+                new_db_contact['labels'] = child.value
+
+            if field_name == 'fn':
+                new_db_contact['name'] = child.value
+        
+        new_db_contact.save()
+        new_db_contacts.append(new_db_contact)
+        try:
+            user['contact_list'].append(new_db_contact['_id'])
+        except KeyError:
+            user['contact_list'] = [new_db_contact['_id']]
+
+        user.save()
+    return new_db_contacts
+                
 
 @app.route('/csv', methods=['POST'])
 def upload_csv():
     file = request.files['file']
     token = request.headers.get('token')
-    stream = io.StringIO(file.stream.read().decode(), newline=None)
-    csv = reader(stream)
-    lines = []
-    for row in csv:
-        lines.append(row)
+    if file.filename.endswith(".vcf"):
+        contacts = parse_upload_vcard(token, file)
+    else:
+        stream = io.StringIO(file.stream.read().decode(), newline=None)
+        csv = reader(stream)
+        lines = []
+        for row in csv:
+            lines.append(row)
 
-    fields = lines[0]
-    contacts = parse_upload_csv(token, fields, lines[1:])
+        fields = lines[0]
+        contacts = parse_upload_csv(token, fields, lines[1:])
 
     if not contacts:
-        return 422  # unprocessable entity if not in google or outlook contact form
+        return 422  # unprocessable entity if not in google, outlook or vcard contact form
 
     return jsonify(contacts), 200
 
