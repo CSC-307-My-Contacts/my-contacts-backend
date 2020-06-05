@@ -28,6 +28,9 @@ This will run the tests and display the test coverage.
 pip3 install -r requirements.txt
 ```
 
+### Install mongodb
+* [Mongodb](https://docs.mongodb.com/manual/installation/)
+
 ### Start Backend
 ```python
 python3 backend/contactsAPI.py
