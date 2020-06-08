@@ -89,7 +89,7 @@ def login():
             # Username not found
             return Response(status=403)
 
-        if requested_user['password'] == user['password']:
+        if str(hash(requested_user['password'])) == user['password']:
             return jsonify({'token': user['token']})
         # Invalid password
         return Response(status=403)
@@ -109,6 +109,7 @@ def create_user():
             return Response(status=403)
 
         user['token'] = str(hash(user['username'] + user['password']))
+        user['password'] = str(hash(user['password']))
         user['contact_list'] = []
         user.save()
 
